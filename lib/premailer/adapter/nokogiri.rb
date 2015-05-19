@@ -214,12 +214,14 @@ class Premailer
         end
         # Default encoding is ASCII-8BIT (binary) per http://groups.google.com/group/nokogiri-talk/msg/0b81ef0dc180dc74
         # However, we really don't want to hardcode this. ASCII-8BIT should be the default, but not the only option.
-        if thing.is_a?(String) and RUBY_VERSION =~ /1.9/
+        if RUBY_PLATFORM == 'java'
+          @options[:input_encoding] = 'UTF-8' if @options[:input_encoding] == 'ASCII-8BIT'
+          doc = ::Nokogiri::HTML(thing, nil, @options[:input_encoding] || 'BINARY') {|c| c.recover }
+        elsif thing.is_a?(String) and RUBY_VERSION =~ /1.9/
           thing = thing.force_encoding(@options[:input_encoding]).encode!
           doc = ::Nokogiri::HTML(thing, nil, @options[:input_encoding]) {|c| c.recover }
         else
-          default_encoding = RUBY_PLATFORM == 'java' ? nil : 'BINARY'
-          doc = ::Nokogiri::HTML(thing, nil, @options[:input_encoding] || default_encoding) {|c| c.recover }
+          doc = ::Nokogiri::HTML(thing, nil, @options[:input_encoding] || 'BINARY') {|c| c.recover }
         end
 
         # Fix for removing any CDATA tags from both style and script tags inserted per

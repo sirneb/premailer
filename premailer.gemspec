@@ -25,6 +25,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency('hpricot', '>= 0.8.3')
   s.add_development_dependency('nokogiri', '>= 1.4.4')
   s.add_development_dependency('yard', '~> 0.8.7.6')
-  s.add_development_dependency('redcarpet', '~> 3.0')
+  s.add_development_dependency('kramdown', '~> 1.7.0')
 end
 
