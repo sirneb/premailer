@@ -39,4 +39,8 @@ protected
     @doc = @premailer.processed_doc
   end
 
+  def adapters
+    RUBY_PLATFORM == 'java' ? [:nokogiri] : [:nokogiri, :hpricot]
+  end
+
 end

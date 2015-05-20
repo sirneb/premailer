@@ -63,7 +63,7 @@ END_HTML
 		</html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
   		premailer = Premailer.new(html, :with_html_string => true, :adapter => adapter)
   		premailer.to_inline_css
 
@@ -107,7 +107,8 @@ END_HTML
 		</body>
 		</html>
 END_HTML
-    [:nokogiri, :hpricot].each do |adapter|
+
+    adapters.each do |adapter|
   		premailer = Premailer.new(html, :with_html_string => true, :preserve_styles => true,  :adapter => adapter)
   		premailer.to_inline_css
   	  assert_equal 1, premailer.processed_doc.search('head link').length
@@ -160,7 +161,7 @@ END_HTML
     </body> </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       puts "------- Testing adapter #{adapter}"
       premailer = Premailer.new(html, :with_html_string => true, :adapter => adapter)
       puts premailer.to_inline_css
@@ -309,13 +310,13 @@ END_HTML
     </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       premailer = Premailer.new(html, :with_html_string => true, :remove_scripts => true, :adapter => adapter)
       premailer.to_inline_css
       assert_equal 0, premailer.processed_doc.search('script').length
     end
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       premailer = Premailer.new(html, :with_html_string => true, :remove_scripts => false, :adapter => adapter)
       premailer.to_inline_css
       assert_equal 1, premailer.processed_doc.search('script').length
@@ -334,7 +335,7 @@ END_HTML
     </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       premailer = Premailer.new(html, :with_html_string => true, :adapter => adapter)
       assert_match 'bgcolor="#FF0000"', premailer.to_inline_css
     end

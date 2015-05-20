@@ -26,29 +26,31 @@ class TestPremailer < Premailer::TestCase
 
   # TODO: this passes when run from rake but not when run from:
   #  ruby -Itest test/test_premailer.rb -n test_special_characters_hpricot
-  def test_special_characters_hpricot
-    html = 	'<p>cédille c&eacute; & garçon gar&#231;on à &agrave; &nbsp; &amp;</p>'
-    premailer = Premailer.new(html, :with_html_string => true, :adapter => :hpricot)
-  	premailer.to_inline_css
-    assert_equal 'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp;', premailer.processed_doc.at('p').inner_html
+  if RUBY_PLATFORM != 'java'
+    def test_special_characters_hpricot
+      html = 	'<p>cédille c&eacute; & garçon gar&#231;on à &agrave; &nbsp; &amp;</p>'
+      premailer = Premailer.new(html, :with_html_string => true, :adapter => :hpricot)
+      premailer.to_inline_css
+      assert_equal 'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp;', premailer.processed_doc.at('p').inner_html
+    end
   end
 
   def test_detecting_html
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       remote_setup('base.html', :adapter => adapter)
       assert !@premailer.is_xhtml?
     end
   end
 
   def test_detecting_xhtml
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       remote_setup('xhtml.html', :adapter => adapter)
       assert @premailer.is_xhtml?
     end
   end
 
   def test_self_closing_xhtml_tags
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       remote_setup('xhtml.html', :adapter => adapter)
       assert_match /<br[\s]*\/>/, @premailer.to_s
       assert_match /<br[\s]*\/>/, @premailer.to_inline_css
@@ -56,7 +58,7 @@ class TestPremailer < Premailer::TestCase
   end
 
   def test_non_self_closing_html_tags
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       remote_setup('html4.html', :adapter => adapter)
       assert_match /<br>/, @premailer.to_s
       assert_match /<br>/, @premailer.to_inline_css
@@ -72,7 +74,7 @@ END_HTML
 
     qs = 'testing=123'
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
 		  premailer = Premailer.new(html, :with_html_string => true, :link_query_string => qs, :adapter => adapter)
 		  premailer.to_inline_css
 	    assert_no_match /testing=123/, premailer.processed_doc.search('a').first.attributes['href'].to_s
@@ -87,7 +89,7 @@ END_HTML
   end
 
   def test_preserving_ignored_style_elements
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       local_setup('ignore.html', :adapter => adapter)
 
       assert_nil @doc.at('h1')['style']
@@ -95,7 +97,7 @@ END_HTML
   end
 
   def test_preserving_ignored_link_elements
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       local_setup('ignore.html', :adapter => adapter)
 
       assert_nil @doc.at('body')['style']
@@ -116,7 +118,7 @@ END_HTML
   end
 
   def test_importing_remote_css
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       remote_setup('base.html', :adapter => adapter)
 
       # noimport.css (print stylesheet) sets body { background } to red
@@ -132,7 +134,7 @@ END_HTML
 
     css_string = IO.read(File.join(files_base, 'import.css'))
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       premailer = Premailer.new(File.join(files_base, 'no_css.html'), {:css_string => css_string, :adapter => adapter})
       premailer.to_inline_css
       @doc = premailer.processed_doc
@@ -153,7 +155,7 @@ END_HTML
   end
 
   def test_initialize_can_accept_io_object
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       io = StringIO.new('hi mom')
       premailer = Premailer.new(io, :adapter => adapter)
       assert_match /hi mom/, premailer.to_inline_css
@@ -161,7 +163,7 @@ END_HTML
   end
 
   def test_initialize_can_accept_html_string
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       premailer = Premailer.new('<p>test</p>', :with_html_string => true, :adapter => adapter)
       assert_match /test/, premailer.to_inline_css
     end
@@ -175,7 +177,7 @@ END_HTML
 		</body> </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
     	pm = Premailer.new(html, :with_html_string => true, :adapter => adapter, :escape_url_attributes => false)
       pm.to_inline_css
       doc = pm.processed_doc
@@ -193,7 +195,7 @@ END_HTML
 		</body> </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
   		pm = Premailer.new(html, :with_html_string => true, :remove_ids => true, :adapter => adapter)
       pm.to_inline_css
       doc = pm.processed_doc
@@ -212,7 +214,7 @@ END_HTML
     <div contenteditable="true" id="editable"> Test </div>
     </body> </html>
     ___
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
   		pm = Premailer.new(html, :with_html_string => true, :reset_contenteditable => true, :adapter => adapter)
       pm.to_inline_css
       doc = pm.processed_doc
@@ -229,7 +231,7 @@ END_HTML
     </body></html>
     html
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
       pm = Premailer.new(html, :with_html_string => true, :adapter => adapter)
       assert_match /\r/, pm.to_inline_css
     end
@@ -242,9 +244,11 @@ END_HTML
     assert_match /italic/, @doc.at('p[attr~=quote]')['style']
     assert_match /italic/, @doc.at('ul li:first-of-type')['style']
 
-    remote_setup('base.html', :adapter => :hpricot)
-    assert_match /italic/, @doc.at('p[@attr~="quote"]')['style']
-    assert_match /italic/, @doc.at('ul li:first-of-type')['style']
+    if RUBY_PLATFORM != 'java'
+      remote_setup('base.html', :adapter => :hpricot)
+      assert_match /italic/, @doc.at('p[@attr~="quote"]')['style']
+      assert_match /italic/, @doc.at('ul li:first-of-type')['style']
+    end
   end
 
   def test_premailer_related_attributes
@@ -255,7 +259,7 @@ END_HTML
 		</body> </html>
 END_HTML
 
-    [:nokogiri, :hpricot].each do |adapter|
+    adapters.each do |adapter|
   		pm = Premailer.new(html, :with_html_string => true, :adapter => adapter)
       pm.to_inline_css
       doc = pm.processed_doc
@@ -286,9 +290,9 @@ END_HTML
 
   def test_input_encoding
     html_special_characters = "Ää, Öö, Üü"
-    expected_html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body><p>" + html_special_characters + "</p></body></html>\n"
-    pm = Premailer.new(html_special_characters, :with_html_string => true, :adapter => :nokogiri, :input_encoding => "UTF-8")
-    assert_equal expected_html, pm.to_inline_css
+    html = "<p>#{html_special_characters}</p>"
+    pm = Premailer.new(html, :with_html_string => true, :adapter => :nokogiri, :input_encoding => "UTF-8")
+    assert_equal html_special_characters, pm.processed_doc.at('p').text
   end
 
   # output_encoding option should return HTML Entities when set to US-ASCII
@@ -309,9 +313,12 @@ END_HTML
 
   def test_meta_encoding_upcase
     meta_encoding = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
-    expected_html = Regexp.new(Regexp.escape('<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'), Regexp::IGNORECASE)
+    http_equiv = Regexp.new(Regexp.escape('http-equiv="Content-Type"'), Regexp::IGNORECASE)
+    content = Regexp.new(Regexp.escape('content="text/html; charset=UTF-8"'), Regexp::IGNORECASE)
     pm = Premailer.new(meta_encoding, :with_html_string => true, :adapter => :nokogiri, :input_encoding => "UTF-8")
-    assert_match expected_html, pm.to_inline_css
+    doc = pm.to_inline_css
+    assert_match http_equiv, doc
+    assert_match content, doc
   end
 
   def test_htmlentities
