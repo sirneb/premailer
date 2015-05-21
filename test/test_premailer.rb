@@ -31,7 +31,7 @@ class TestPremailer < Premailer::TestCase
       html = 	'<p>cédille c&eacute; & garçon gar&#231;on à &agrave; &nbsp; &amp;</p>'
       premailer = Premailer.new(html, :with_html_string => true, :adapter => :hpricot)
       premailer.to_inline_css
-      assert_equal 'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp;', premailer.processed_doc.at('p').inner_html
+      assert_equal 'cédille c&eacute; & garçon gar&#231;on à &agrave; &nbsp; &amp;', premailer.processed_doc.at('p').inner_html
     end
   end
 
