@@ -11,7 +11,7 @@ class TestLinks < Premailer::TestCase
 
   def test_appending_link_query_string
     qs = 'utm_source=1234&tracking=good&amp;doublescape'
-    adapter = RUBY_PLATFORM == 'java' ? :nokogiri : :hpricot
+    adapter = jruby? ? :nokogiri : :hpricot
     opts = {:base_url => 'http://example.com/',  :link_query_string => qs, :with_html_string => true, :adapter => adapter}
     
     appendable = [

@@ -231,9 +231,11 @@ END_HTML
     </body></html>
     html
 
+    regex = jruby? ? /\n\n/ : /\n\r/
+
     adapters.each do |adapter|
       pm = Premailer.new(html, :with_html_string => true, :adapter => adapter)
-      assert_match /\r/, pm.to_inline_css
+      assert_match regex, pm.to_inline_css
     end
   end
 
@@ -244,7 +246,7 @@ END_HTML
     assert_match /italic/, @doc.at('p[attr~=quote]')['style']
     assert_match /italic/, @doc.at('ul li:first-of-type')['style']
 
-    if RUBY_PLATFORM != 'java'
+    if !jruby?
       remote_setup('base.html', :adapter => :hpricot)
       assert_match /italic/, @doc.at('p[@attr~="quote"]')['style']
       assert_match /italic/, @doc.at('ul li:first-of-type')['style']
@@ -306,9 +308,12 @@ END_HTML
 
   def test_meta_encoding_downcase
     meta_encoding = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-    expected_html = Regexp.new(Regexp.escape('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'), Regexp::IGNORECASE)
+    http_equiv = Regexp.new(Regexp.escape('http-equiv="Content-Type"'), Regexp::IGNORECASE)
+    content = Regexp.new(Regexp.escape('content="text/html; charset=utf-8"'), Regexp::IGNORECASE)
     pm = Premailer.new(meta_encoding, :with_html_string => true, :adapter => :nokogiri, :input_encoding => "utf-8")
-    assert_match expected_html, pm.to_inline_css
+    doc = pm.to_inline_css
+    assert_match http_equiv, doc
+    assert_match content, doc
   end
 
   def test_meta_encoding_upcase
@@ -323,9 +328,8 @@ END_HTML
 
   def test_htmlentities
     html_entities = "&#8217;"
-    expected_html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body><p>'</p></body></html>\n"
     pm = Premailer.new(html_entities, :with_html_string => true, :adapter => :nokogiri, :replace_html_entities => true)
-    assert_equal expected_html, pm.to_inline_css
+    assert_equal html_entities, pm.processed_doc.css('body').text
   end
 
   # If a line other than the first line in the html string begins with a URI

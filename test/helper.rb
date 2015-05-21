@@ -40,7 +40,11 @@ protected
   end
 
   def adapters
-    RUBY_PLATFORM == 'java' ? [:nokogiri] : [:nokogiri, :hpricot]
+    jruby? ? [:nokogiri] : [:nokogiri, :hpricot]
+  end
+
+  def jruby?
+    RUBY_PLATFORM == 'java'
   end
 
 end
