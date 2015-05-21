@@ -47,4 +47,12 @@ protected
     RUBY_PLATFORM == 'java'
   end
 
+  def special_chars_nokogiri
+    if jruby?
+      'cédille cé &amp; garçon garçon à à   &amp; ©'
+    else
+      'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp; &copy;'
+    end
+  end
+
 end

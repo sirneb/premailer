@@ -5,20 +5,15 @@ require File.expand_path(File.dirname(__FILE__)) + '/helper'
 class TestPremailer < Premailer::TestCase
   def test_special_characters_nokogiri
     html = 	'<p>cédille c&eacute; & garçon gar&#231;on à &agrave; &nbsp; &amp; &copy;</p>'
-    expected = if jruby?
-        'cédille cé &amp; garçon garçon à à   &amp; ©'
-      else
-        'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp; &copy;'
-      end
     premailer = Premailer.new(html, :with_html_string => true, :adapter => :nokogiri)
   	premailer.to_inline_css
-    assert_equal expected, premailer.processed_doc.at('p').inner_html
+    assert_equal special_chars_nokogiri, premailer.processed_doc.at('p').inner_html
   end
 
   def test_special_characters_nokogiri_remote
     remote_setup('chars.html', :adapter => :nokogiri)
   	@premailer.to_inline_css
-    assert_equal 'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp; &copy;', @premailer.processed_doc.at('p').inner_html
+    assert_equal special_chars_nokogiri, @premailer.processed_doc.at('p').inner_html
   end
 
   #def test_cyrillic_nokogiri_remote
