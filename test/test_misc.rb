@@ -123,10 +123,7 @@ END_HTML
 
       # should be preserved as unmergeable
 
-      ## BUG: for hpricot adapter,processed_doc.at('body style') is nil
-      unless adapter == :hpricot
-        assert_match /color: red/i, premailer.processed_doc.at('body style').inner_html
-      end
+      assert_match /color: red/i, premailer.processed_doc.at('body style').inner_html
 
       assert_match /a:hover/i, premailer.processed_doc.at('style').inner_html
     end
@@ -172,18 +169,15 @@ END_HTML
 
       style_tag = premailer.processed_doc.at('body style')
 
-      # BUG: for hpricot adapter, style_tag is nil
-      unless adapter == :hpricot
-        assert style_tag, "#{adapter} failed to add a body style tag"
-        style_tag_contents = style_tag.inner_html
+      assert style_tag, "#{adapter} failed to add a body style tag"
+      style_tag_contents = style_tag.inner_html
 
-        assert_equal "color: blue", premailer.processed_doc.at('a').attributes['style'].to_s,
-                    "#{adapter}: Failed to inline the default style"
-        assert_match /@media \(min-width:500px\) \{.*?a \{.*?color: red;.*?\}.*?\}/m, style_tag_contents,
-                    "#{adapter}: Failed to add media query with no type to style"
-        assert_match /@media screen and \(orientation: portrait\) \{.*?a \{.*?color: green;.*?\}.*?\}/m, style_tag_contents,
-                    "#{adapter}: Failed to add media query with type to style"
-      end
+      assert_match "color: blue", premailer.processed_doc.at('a').attributes['style'].to_s,
+                  "#{adapter}: Failed to inline the default style"
+      assert_match /@media \(min-width:500px\) \{.*?a \{.*?color: red;.*?\}.*?\}/m, style_tag_contents,
+                  "#{adapter}: Failed to add media query with no type to style"
+      assert_match /@media screen and \(orientation: portrait\) \{.*?a \{.*?color: green;.*?\}.*?\}/m, style_tag_contents,
+                  "#{adapter}: Failed to add media query with type to style"
     end
 
   end

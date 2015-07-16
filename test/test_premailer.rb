@@ -354,4 +354,32 @@ END_HTML
     end
   end
 
+  def test_media_queries_when_keep_unmergable_in_head_flag_is_true
+    html = <<-___
+    <!DOCTYPE html>
+    <html><head>
+      <style type="text/css">
+        #remove { color:blue; }
+        @media only screen and (max-width:480px) { table { color:red; } }
+      </style>
+    </head>
+    <body>
+    <div id="editable"> Test </div>
+    </body> </html>
+    ___
+    adapters.each do |adapter|
+      pm = Premailer.new(html, :with_html_string => true, :adapter => adapter, keep_unmergable_in_head: true)
+      pm.to_inline_css
+      doc = pm.processed_doc
+      refute_nil doc.at('head > style')
+      asserted =
+        if adapter == :hpricot
+          doc.at('head > style').html
+        elsif adapter == :nokogiri
+          doc.at('head > style').text
+        end
+      assert_equal(asserted, "\n@media only screen and (max-width:480px) {\n  table {\n    color: red;\n  }\n}\n")
+    end
+  end
+
 end

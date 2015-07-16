@@ -143,15 +143,19 @@ class Premailer
         styles = unmergable_rules.to_s
 
         unless styles.empty?
-          style_tag = "<style type=\"text/css\">\n#{styles}</style>"
-          unless (body = doc.search('body')).empty?
-            if doc.at_css('body').children && !doc.at_css('body').children.empty?
-              doc.at_css('body').children.before(::Nokogiri::XML.fragment(style_tag))
-            else
-              doc.at_css('body').add_child(::Nokogiri::XML.fragment(style_tag))
-            end
+          style_tag = "\n<style type=\"text/css\">\n#{styles}</style>"
+          if @options[:keep_unmergable_in_head] && !doc.search('head').empty?
+            doc.at_css('head').add_child(::Nokogiri::XML.fragment(style_tag))
           else
-            doc.inner_html = style_tag += doc.inner_html
+            unless doc.search('body').empty?
+              if doc.at_css('body').children && !doc.at_css('body').children.empty?
+                doc.at_css('body').children.before(::Nokogiri::XML.fragment(style_tag))
+              else
+                doc.at_css('body').add_child(::Nokogiri::XML.fragment(style_tag))
+              end
+            else
+              doc.inner_html = style_tag += doc.inner_html
+            end
           end
         end
         doc
